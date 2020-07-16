@@ -1,0 +1,3 @@
+wishpy
+elasticsearch
+redis
