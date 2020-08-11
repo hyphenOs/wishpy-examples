@@ -42,7 +42,7 @@ class RedisPacketPublisher:
 
         self.__initialized = True
 
-    def start(self):
+    def start(self, redis_queue):
 
         self.__capturer_thread = threading.Thread(
                 target=self.__capturer.start, args=())
@@ -50,12 +50,12 @@ class RedisPacketPublisher:
             self.__capturer_thread.start()
             self.__capturer_started = True
             print("Capturer started.")
-            self.run()
+            self.run(redis_queue)
         except Exception as e:
             print(e)
             raise
 
-    def run(self):
+    def run(self, redis_queue):
         """Run through our `start` method.
         """
         if not self.__initialized:
@@ -66,7 +66,7 @@ class RedisPacketPublisher:
         try:
             for _, _, d in self.__dissector.run():
                 print(d)
-                self.__redis_client.rpush('paket_queue:wlp2s0', d)
+                self.__redis_client.rpush(redis_queue, d)
         except KeyboardInterrupt:
             print("Stop Requested, stopping Capturer.")
         except Exception as e:
@@ -95,11 +95,18 @@ def _main(args):
 
     _ = args #Ignoring for now
 
+    if len(args) != 2:
+        print("Usage: wishpy_redis.py <interface-name>")
+        sys.exit(1)
+
+    iface_name = args[1]
+    redis_queue = "packet_queue:{}".format(iface_name)
+
     redis_client = redis.Redis(db=_REDIS_DB)
 
     _internal_q = queue.Queue()
 
-    capturer = WishpyCapturerIfaceToQueue("wlp2s0", _internal_q)
+    capturer = WishpyCapturerIfaceToQueue(iface_name, _internal_q)
 
     dissector = WishpyDissectorQueuePython(_internal_q)
 
@@ -108,7 +115,7 @@ def _main(args):
 
         publisher.init()
 
-        publisher.start()
+        publisher.start(redis_queue)
 
     except KeyboardInterrupt:
         publisher.stop()
