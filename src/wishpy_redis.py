@@ -12,7 +12,7 @@ from wishpy.wireshark.lib.dissector import (
         setup_process,
         cleanup_process)
 
-from wishpy.libpcap.lib.capturer import LibpcapCapturer
+from wishpy.libpcap.lib.capturer import WishpyCapturerIfaceToQueue
 
 _REDIS_DB = 7
 
@@ -45,10 +45,15 @@ class RedisPacketPublisher:
     def start(self):
 
         self.__capturer_thread = threading.Thread(
-                target=self.__capturer.start, args=()).start()
-        self.__capturer_started = True
-        print("Capturer started.")
-        self.run()
+                target=self.__capturer.start, args=())
+        try:
+            self.__capturer_thread.start()
+            self.__capturer_started = True
+            print("Capturer started.")
+            self.run()
+        except Exception as e:
+            print(e)
+            raise
 
     def run(self):
         """Run through our `start` method.
@@ -58,9 +63,18 @@ class RedisPacketPublisher:
         if not self.__capturer_started:
             raise RedisPacketPublisherError("Packet Capture is not started.")
 
-        for _, _, d in self.__dissector.run():
-            print(d)
-            self.__redis_client.rpush('paket_queue:wlp2s0', d)
+        try:
+            for _, _, d in self.__dissector.run():
+                print(d)
+                self.__redis_client.rpush('paket_queue:wlp2s0', d)
+        except KeyboardInterrupt:
+            print("Stop Requested, stopping Capturer.")
+        except Exception as e:
+            print(e)
+
+        finally:
+            # Should never come here other than - Exceptions or Keyboard Interrupt
+            self.stop()
 
 
         # Comes here after dissector is stopped. Join the capturer thread
@@ -85,18 +99,24 @@ def _main(args):
 
     _internal_q = queue.Queue()
 
-    capturer = LibpcapCapturer("wlp2s0", _internal_q)
+    capturer = WishpyCapturerIfaceToQueue("wlp2s0", _internal_q)
 
     dissector = WishpyDissectorQueuePython(_internal_q)
 
     publisher = RedisPacketPublisher(redis_client, capturer, dissector)
-    publisher.init()
     try:
+
+        publisher.init()
 
         publisher.start()
 
     except KeyboardInterrupt:
         publisher.stop()
+    except Exception as e:
+        print(e)
+        sys.exit(1)
+        publisher.stop()
+
 
 
 if __name__ == '__main__':
