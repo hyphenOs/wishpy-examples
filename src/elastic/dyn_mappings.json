@@ -1,0 +1,25 @@
+{
+  "mappings" : {
+    "dynamic_date_formats" : ["MMM dd, YYYY HH:mm:ss.SSSSSS z"],
+    "dynamic_templates": [
+      {
+        "unindexed_doubles" : {
+          "match_mapping_type": "double",
+          "mapping": {
+            "type": "float",
+            "index": false
+          }
+        }
+      }
+    ]
+  },
+  "settings": {
+    "index": {
+      "mapping": {
+        "total_fields":{
+          "limit": 5000
+        }
+      }
+    }
+  }
+}
