@@ -1,6 +1,6 @@
 {
   "mappings" : {
-    "dynamic_date_formats" : ["MMM dd, YYYY HH:mm:ss.SSSSSS z"],
+    "dynamic_date_formats" : ["MMM dd, yyyy HH:mm:ss.nnnnnnnnn z || MMM  d, yyyy HH:mm:ss.nnnnnnnnn z"],
     "dynamic_templates": [
       {
         "unindexed_doubles" : {

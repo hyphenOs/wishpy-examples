@@ -22,4 +22,4 @@ An example code that picks up packets from the interface specified on the comman
 Wishpy + Elastic
 ----------------
 
-A very simple version of code that dumps Packets from a PCAP to Elastic - ``src/elastic/wishpy_elastic.py``. **Note: This is very very early!**
+A very simple version of code that dumps Packets from a PCAP to Elastic - ``src/elastic/wishpy_elastic.py``. This example, picks up Ethernet frames from a PCAP file and dumps them to Elastic. The frame time is automatically converted to timestamp (See ``src/elastic/dyn_mappings.json``). One can then explore this data in Kibana say! **Note: This is very very early!**
