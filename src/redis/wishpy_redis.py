@@ -109,6 +109,7 @@ def _main(args):
     capturer = WishpyCapturerIfaceToQueue(iface_name, _internal_q)
 
     dissector = WishpyDissectorQueuePython(_internal_q)
+    dissector.set_elasticky(True)
 
     publisher = RedisPacketPublisher(redis_client, capturer, dissector)
     try:
@@ -124,9 +125,8 @@ def _main(args):
         sys.exit(1)
         publisher.stop()
 
-
-
 if __name__ == '__main__':
+
 
     _main(sys.argv)
 

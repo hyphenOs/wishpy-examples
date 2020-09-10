@@ -37,7 +37,9 @@ class PcapFileElasticDumper:
 
         mappings_file_path = os.path.join(os.path.dirname(
                     os.path.abspath(__file__)), _MAPPINGS_FILE)
-        mappings_doc = open(mappings_file_path, "r").read()
+
+        with open(mappings_file_path, "r") as f:
+            mappings_doc = f.read()
 
         try:
             self._index = self._elastic_handle.indices.create(
@@ -47,8 +49,6 @@ class PcapFileElasticDumper:
         except Exception as e:
             _logger.exception("init")
             raise
-
-        print(self._index)
 
     def run(self):
         count = 0
